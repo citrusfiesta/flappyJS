@@ -46,7 +46,7 @@ var
     init = {},
     obstacles = [],
     gapSize = 100,
-    scrollSpeed = 1.5;
+    scrollSpeed = 1;
 
 window.addEventListener("keypress", btnPress);
 window.addEventListener("keypress", startGame);
@@ -88,8 +88,11 @@ function update() {
 function moveObstacles() {
     for (var i = obstacles.length - 1; i >= 0; --i)
         obstacles[i].x -= scrollSpeed;
-    //if (obstacles[0].x <= -obstacles[0].width)
-    //    obstacles[0].x =
+    if (obstacles[0].x <= -obstacles[0].width) {
+        // Move first object to the end of the array
+        obstacles.push(obstacles.shift());
+        obstacles[obstacles.length - 1].resetPosition(obstacles[0].x);
+    }
 }
 
 /**
@@ -115,7 +118,7 @@ function drawObjects() {
 }
 
 /**
- * Handles button presses. Only space bar is used for now
+ * Handles button presses. Only space bar is used for now.
  * @param e
  */
 function btnPress(e) {
@@ -127,21 +130,16 @@ function btnPress(e) {
 function ObstaclePair(positionInArray) {
     this.width = bird.size + bird.size;
     this.spacing = positionInArray * this.width * 5;
-    //this.x = canvasWidth + spacing * this.width * 5;
-    this.x = 150 + this.spacing;//temp. for testing
+    this.x = canvasWidth + this.spacing;
     // This formula ensures the gap in between the obstacle pair will never touch the screen edge
     this.gapStart =
         Math.round(this.width + Math.random() * (canvasHeight - gapSize - this.width * 2));
     this.gapEnd = this.gapStart + gapSize;
 
-    //reset:function() {
-    //    this.x =
-    //}
-
-    //ctx.fillStyle = color;
-    //ctx.fillRect(this.x, 0, this.width, this.gapStart);
-    //
-    //ctx.fillRect(this.x, this.gapEnd + gapSize, this.width, canvasHeight);
+    this.resetPosition = function (xPosOfNextObstaclePair) {
+        this.spacing = (obstacles.length - 1) * this.width * 5;
+        this.x = xPosOfNextObstaclePair + this.spacing;
+    }
 }
 
 function createObstaclePair(amount) {
