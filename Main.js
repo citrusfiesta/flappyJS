@@ -6,7 +6,7 @@ window.requestAnimFrame = (function(){
         window.oRequestAnimationFrame      ||
         window.msRequestAnimationFrame     ||
         function( callback ){
-            return window.setTimeout(callback, 1000 / 30);
+            return window.setTimeout(callback, 1000 / fps);
         };
 })();
 
@@ -26,6 +26,7 @@ var
      * @type {HTMLElement}
      */
     canvas = document.getElementById("canvas"),
+    fps = 30;
     /**
      * Used for drawing objects in the canvas.
      * @type {CanvasRenderingContext2D}
@@ -44,7 +45,8 @@ var
      */
     init = {},
     obstacles = [],
-    gapSize = 100;
+    gapSize = 100,
+    scrollSpeed = 1.5;
 
 window.addEventListener("keypress", btnPress);
 window.addEventListener("keypress", startGame);
@@ -60,7 +62,7 @@ bird = {
     color: color,
     gravity: 0.5,
     vertSpeed: 0,
-    jumpSpeed: 8,
+    jumpSpeed: 7,
 
     jump:function() {
         this.vertSpeed = -this.jumpSpeed;
@@ -79,12 +81,15 @@ bird = {
 
 function update() {
     bird.addGravity();
-
-
-    //move objects
-
-
+    moveObstacles();
     draw();
+}
+
+function moveObstacles() {
+    for (var i = obstacles.length - 1; i >= 0; --i)
+        obstacles[i].x -= scrollSpeed;
+    //if (obstacles[0].x <= -obstacles[0].width)
+    //    obstacles[0].x =
 }
 
 /**
@@ -102,10 +107,10 @@ function drawBg() {
 }
 
 function drawObjects() {
-    ctx.fillStyle = color;
-    for (var obPair in obstacles) {
-        console.debug("nr of objects in obstacles is", obstacles.length);
-        //ctx.fillRect(obPair.x)
+    for (var i = obstacles.length - 1; i >= 0; --i) {
+        ctx.fillStyle = color;
+        ctx.fillRect(obstacles[i].x, 0, obstacles[i].width, obstacles[i].gapStart);
+        ctx.fillRect(obstacles[i].x, obstacles[i].gapEnd, obstacles[i].width, canvasHeight);
     }
 }
 
@@ -119,20 +124,29 @@ function btnPress(e) {
         bird.jump();
 }
 
-function ObstaclePair() {
-    this.x = canvasWidth-100;
+function ObstaclePair(positionInArray) {
     this.width = bird.size + bird.size;
+    this.spacing = positionInArray * this.width * 5;
+    //this.x = canvasWidth + spacing * this.width * 5;
+    this.x = 150 + this.spacing;//temp. for testing
     // This formula ensures the gap in between the obstacle pair will never touch the screen edge
-    this.gapStart = Math.round(this.width + Math.random() * (canvasHeight - this.width));
+    this.gapStart =
+        Math.round(this.width + Math.random() * (canvasHeight - gapSize - this.width * 2));
+    this.gapEnd = this.gapStart + gapSize;
 
-    ctx.fillStyle = color;
-    ctx.fillRect(this.x, 0, this.width, this.gapStart);
+    //reset:function() {
+    //    this.x =
+    //}
 
-    ctx.fillRect(this.x, this.gapStart + gapSize, this.width, canvasHeight);
+    //ctx.fillStyle = color;
+    //ctx.fillRect(this.x, 0, this.width, this.gapStart);
+    //
+    //ctx.fillRect(this.x, this.gapEnd + gapSize, this.width, canvasHeight);
 }
 
-function createObstaclePair() {
-    obstacles.push(new ObstaclePair());
+function createObstaclePair(amount) {
+    for (var i = amount - 1; i >= 0; --i)
+        obstacles.push(new ObstaclePair(obstacles.length));
 }
 
 function gameLoop() {
@@ -147,8 +161,8 @@ function gameLoop() {
  */
 function startGame(e) {
     window.removeEventListener("keypress", startGame);
+    createObstaclePair(3);//temp. testing out how obstacle pairs are made
     gameLoop();
-    createObstaclePair();//temp. testing out how obstacle pairs are made
 }
 
 function instructions() {
