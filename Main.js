@@ -26,12 +26,12 @@ var
      * @type {HTMLElement}
      */
     canvas = document.getElementById("canvas"),
-    fps = 30;
+    fps = 30,
     /**
      * Used for drawing objects in the canvas.
      * @type {CanvasRenderingContext2D}
      */
-    ctx = canvas.getContext("2d");
+    ctx = canvas.getContext("2d"),
     canvasWidth = 300,
     canvasHeight = 534,
     /**
@@ -60,6 +60,8 @@ bird = {
     y: canvasHeight * 0.5,
     size: 16,
     color: color,
+    score: 0,
+    scored: false,
     gravity: 0.5,
     vertSpeed: 0,
     jumpSpeed: 7,
@@ -82,6 +84,7 @@ bird = {
 function update() {
     bird.addGravity();
     moveObstacles();
+    collisionCheck(bird, obstacles[0]);
     draw();
 }
 
@@ -92,6 +95,18 @@ function moveObstacles() {
         // Move first object to the end of the array
         obstacles.push(obstacles.shift());
         obstacles[obstacles.length - 1].resetPosition(obstacles[0].x);
+        bird.scored = false;//put this in function to make it clear what it does
+    }
+}
+
+function collisionCheck(b, o) {
+    if (b.x + b.size >= o.x && b.x <= o.x + o.width) {
+        if (b.y <= o.gapStart || b.y + b.size >= o.gapEnd)
+            gameOver();
+    } else if (b.scored == false && b.x > o.x + o.width) {
+        b.score++;
+        b.scored = true;
+        console.debug("score:", b.score);
     }
 }
 
@@ -158,9 +173,20 @@ function gameLoop() {
  * @param e
  */
 function startGame(e) {
-    window.removeEventListener("keypress", startGame);
-    createObstaclePair(3);//temp. testing out how obstacle pairs are made
-    gameLoop();
+    // If space bar is pressed.
+    if (e.keyCode == 32) {
+        window.removeEventListener("keypress", startGame);
+        createObstaclePair(3);//temp. testing out how obstacle pairs are made
+        gameLoop();
+    }
+}
+
+function gameOver(){
+
+    cancelRequestAnimFrame(init);
+    //first call another function that shows score and that you have press a button to restart
+    // clear screen
+    // reset it to initial set up
 }
 
 function instructions() {
