@@ -1,6 +1,7 @@
-// RequestAnimFrame: a browser API for getting smooth animations
+// RequestAnimFrame: a browser API for getting smooth animations.
+// Got it from: http://cssdeck.com/labs/ping-pong-game-tutorial-with-html5-canvas-and-sounds
 window.requestAnimFrame = (function(){
-    return  window.requestAnimationFrame       ||
+    return  window.requestAnimationFrame   ||
         window.webkitRequestAnimationFrame ||
         window.mozRequestAnimationFrame    ||
         window.oRequestAnimationFrame      ||
@@ -12,10 +13,10 @@ window.requestAnimFrame = (function(){
 
 window.cancelRequestAnimFrame = ( function() {
     return window.cancelAnimationFrame          ||
-        window.webkitCancelRequestAnimationFrame    ||
-        window.mozCancelRequestAnimationFrame       ||
+        window.webkitCancelRequestAnimationFrame||
+        window.mozCancelRequestAnimationFrame   ||
         window.oCancelRequestAnimationFrame     ||
-        window.msCancelRequestAnimationFrame        ||
+        window.msCancelRequestAnimationFrame    ||
         clearTimeout
 } )();
 
@@ -33,6 +34,7 @@ var
      */
     ctx = canvas.getContext("2d"),
     canvasWidth = 300,
+    canvasWidthHalf = canvasWidth * 0.5,
     canvasHeight = 534,
     /**
      * The player character.
@@ -43,24 +45,33 @@ var
     /**
      * Holds reference to the initialized game loop.
      */
-    init = {},
+    game,
+    /**
+     * Array holding the obstacles.
+     * @type {Array}
+     */
     obstacles = [],
+    /**
+     * Size of the vertical gap through which the player has to fly.
+     * @type {number}
+     */
     gapSize = 100,
+    /**
+     * How fast the obstacles come at you.
+     * @type {number}
+     */
     scrollSpeed = 1;
 
-window.addEventListener("keypress", btnPress);
-window.addEventListener("keypress", startGame);
-
-// Set up canvas size
-canvas.width = canvasWidth;
-canvas.height = canvasHeight;
-
+// Expanding upon the bird variable
 bird = {
     x: 50,
     y: canvasHeight * 0.5,
     size: 16,
     color: color,
     score: 0,
+    /**
+     * Used for help with incrementing the score.
+     */
     scored: false,
     gravity: 0.5,
     vertSpeed: 0,
@@ -76,42 +87,93 @@ bird = {
     },
 
     draw: function() {
-        ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.size, this.size);
     }
 };
 
+// Adding event listener for the main gameplay
+window.addEventListener("keypress", btnPress);
+
+/**
+ * Sets up the entire game for a fresh start.
+ */
+function init() {
+    // Set up canvas size
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+    // Set up font properties
+    ctx.font = "18px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = bgColor;
+    ctx.fillStyle = color;
+
+    // Reset the player character
+    bird.x = 50;
+    bird.y = canvasHeight * 0.5;
+    bird.score = 0;
+
+    // Draw everything once
+    draw();
+
+    // Add instructions
+    ctx.fillText("Press [space] to begin flapping", canvasWidthHalf, 200);
+
+    window.addEventListener("keypress", startGame);
+}
+
+/**
+ * Handles the game physics.
+ */
 function update() {
     bird.addGravity();
     moveObstacles();
     collisionCheck(bird, obstacles[0]);
-    draw();
 }
 
+/**
+ * Moves the obstacles forward.
+ */
 function moveObstacles() {
+    // Move all obstacles forward
     for (var i = obstacles.length - 1; i >= 0; --i)
         obstacles[i].x -= scrollSpeed;
+
+    // If obstacle goes off-screen, put it in the back of the array and reset its position
     if (obstacles[0].x <= -obstacles[0].width) {
-        // Move first object to the end of the array
         obstacles.push(obstacles.shift());
         obstacles[obstacles.length - 1].resetPosition(obstacles[0].x);
-        bird.scored = false;//put this in function to make it clear what it does
-    }
-}
-
-function collisionCheck(b, o) {
-    if (b.x + b.size >= o.x && b.x <= o.x + o.width) {
-        if (b.y <= o.gapStart || b.y + b.size >= o.gapEnd)
-            gameOver();
-    } else if (b.scored == false && b.x > o.x + o.width) {
-        b.score++;
-        b.scored = true;
-        console.debug("score:", b.score);
+        // Once the array is correctly sorted, set scored to false again.
+        // (If it is set to false too soon, the score will just keep incrementing)
+        bird.scored = false;
     }
 }
 
 /**
- * Handles displaying all the graphics on the canvas.
+ * Collision check between the bird and the upcoming obstacle only.
+ * @param b The bird, player character.
+ * @param o The upcoming obstacle.
+ */
+function collisionCheck(b, o) {
+    // If the player goes hits the screen edges, it's game over.
+    if (b.y < 0 || b.y + b.size > canvasHeight)
+        gameOver();
+    // If the player hits an obstacle, it's game over.
+    if (b.x + b.size >= o.x && b.x <= o.x + o.width) {
+        if (b.y <= o.gapStart || b.y + b.size >= o.gapEnd)
+            gameOver();
+    }
+    // If the player passes an obstacle, player earns a point.
+    else if (b.scored == false && b.x > o.x + o.width) {
+        b.score++;
+        b.scored = true;
+    }
+}
+
+/**
+ * Handles displaying of all the graphics on the canvas.
  */
 function draw() {
     drawBg();
@@ -122,14 +184,22 @@ function draw() {
 function drawBg() {
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    // Set fill color back to what all the other objects use
+    ctx.fillStyle = color;
 }
 
+/**
+ * Draws everything except for the dark background and the player character.
+ */
 function drawObjects() {
+    // Draw obstacles
     for (var i = obstacles.length - 1; i >= 0; --i) {
-        ctx.fillStyle = color;
         ctx.fillRect(obstacles[i].x, 0, obstacles[i].width, obstacles[i].gapStart);
         ctx.fillRect(obstacles[i].x, obstacles[i].gapEnd, obstacles[i].width, canvasHeight);
     }
+    // Draw score
+    ctx.strokeText(bird.score.toString(), canvasWidthHalf, 100);
+    ctx.fillText(bird.score.toString(), canvasWidthHalf, 100);
 }
 
 /**
@@ -142,59 +212,103 @@ function btnPress(e) {
         bird.jump();
 }
 
-function ObstaclePair(positionInArray) {
+/**
+ * The obstacle object.
+ * @param positionInArray X position is based on the position in the array of the current object.
+ * @constructor
+ */
+function Obstacle(positionInArray) {
     this.width = bird.size + bird.size;
+    /**
+     * The horizontal spacing between the obstacles.
+     * @type {number}
+     */
     this.spacing = positionInArray * this.width * 5;
     this.x = canvasWidth + this.spacing;
-    // This formula ensures the gap in between the obstacle pair will never touch the screen edge
+    /**
+     * Where the vertical gap between obstacles begins.
+     * @type {number}
+     */
+    // This formula ensures the vertical gap in the obstacle will never touch the screen edge
     this.gapStart =
         Math.round(this.width + Math.random() * (canvasHeight - gapSize - this.width * 2));
+    /**
+     * Where the vertical gap between obstacles ends.
+     * @type {number}
+     */
     this.gapEnd = this.gapStart + gapSize;
 
-    this.resetPosition = function (xPosOfNextObstaclePair) {
+    /**
+     * Called when object goes off-screen. Moves object all the way to the right and resets its gap.
+     *
+     * Uses less resources than creating and destroying obstacles
+     * @param xPosNextObstacle
+     */
+    this.resetPosition = function (xPosNextObstacle) {
         this.spacing = (obstacles.length - 1) * this.width * 5;
-        this.x = xPosOfNextObstaclePair + this.spacing;
+        this.x = xPosNextObstacle + this.spacing;
+        this.gapStart =
+            Math.round(this.width + Math.random() * (canvasHeight - gapSize - this.width * 2));
+        this.gapEnd = this.gapStart + gapSize;
     }
 }
 
-function createObstaclePair(amount) {
+/**
+ * Creates a set amount of obstacles.
+ * @param amount How much obstacles are created.
+ */
+function createObstacle(amount) {
     for (var i = amount - 1; i >= 0; --i)
-        obstacles.push(new ObstaclePair(obstacles.length));
-}
-
-function gameLoop() {
-    init = requestAnimFrame (gameLoop);
-    update();
-    draw();
+        obstacles.push(new Obstacle(obstacles.length));
 }
 
 /**
- * Starts the game loop.
+ * While this is running, the game is running.
+ */
+function gameLoop() {
+    game = requestAnimFrame (gameLoop);
+    draw();
+    update();
+}
+
+/**
+ * Starts the game loop when space bar is pressed.
  * @param e
  */
 function startGame(e) {
     // If space bar is pressed.
     if (e.keyCode == 32) {
         window.removeEventListener("keypress", startGame);
-        createObstaclePair(3);//temp. testing out how obstacle pairs are made
+        // Create
+        createObstacle(3);
         gameLoop();
     }
 }
 
+/**
+ * Called when player collides with obstacle. Handles the stopping of the game.
+ */
 function gameOver(){
-
-    cancelRequestAnimFrame(init);
-    //first call another function that shows score and that you have press a button to restart
-    // clear screen
-    // reset it to initial set up
+    // Draw instructions
+    ctx.strokeText("Press [enter] to restart", canvasWidthHalf, 200);
+    ctx.fillText("Press [enter] to restart", canvasWidthHalf, 200);
+    window.addEventListener("keypress", restart);
+    // Stop the game loop.
+    cancelRequestAnimFrame(game);
 }
 
-function instructions() {
-    ctx.font = "18px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    ctx.fillText("Press [space] to begin", canvasWidth * 0.5, 200);
+/**
+ * Clears the obstacle array and calls init() to reset the game.
+ * @param e
+ */
+function restart(e) {
+    // If enter/return is pressed.
+    if (e.keyCode == 13) {
+        window.removeEventListener("keypress", restart);
+        // Clear the obstacle array
+        obstacles = [];
+        init();
+    }
 }
 
-draw();// Draw everything once
-instructions();// And then draw the instructions over it
+init();// Initialize everything
