@@ -173,8 +173,8 @@ function moveObstacles() {
  * @param o The upcoming obstacle.
  */
 function collisionCheck(b, o) {
-    // If the player goes hits the screen edges, it's game over.
-    if (b.y < 0 || b.y + b.size > canvasHeight)
+    // If the player hits the ground, it's game over.
+    if (b.y + b.size > groundHeight)
         gameOver();
     // If the player hits an obstacle, it's game over.
     if (b.x + b.size >= o.x && b.x <= o.x + o.width) {
