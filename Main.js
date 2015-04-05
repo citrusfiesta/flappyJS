@@ -36,7 +36,7 @@ var
     ctx = canvas.getContext("2d"),
     canvasWidth = 300,
     canvasWidthHalf = canvasWidth * 0.5,
-    canvasHeight = 534,
+    canvasHeight = 400,
     /**
      * The player character.
      */
@@ -66,7 +66,8 @@ var
     bgImg = new Image(),
     tubeDownImg = new Image(),
     tubeUpImg = new Image(),
-    groundImg = new Image();
+    groundImg = new Image(),
+    groundPos = 0;
 
 // Expanding upon the bird variable
 bird = {
@@ -108,6 +109,7 @@ function init() {
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
+    // Set up image source
     birdImg.src = "assets/img/bird.png";
     bgImg.src = "assets/img/bg.png";
     tubeDownImg.src = "assets/img/tubeDownward.png";
@@ -190,14 +192,19 @@ function collisionCheck(b, o) {
 function draw() {
     drawBg();
     drawObjects();
+    drawGround()
     bird.draw();
 }
 
 function drawBg() {
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    // Set fill color back to what all the other objects use
-    ctx.fillStyle = color;
+    ctx.drawImage(bgImg, 0, 0);
+}
+
+function drawGround() {
+    // Ground pattern repeats after 24 pixels
+    if (--groundPos < -23)
+        groundPos = 0;
+    ctx.drawImage(groundImg, groundPos, 368);
 }
 
 /**
