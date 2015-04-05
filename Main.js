@@ -67,7 +67,9 @@ var
     tubeDownImg = new Image(),
     tubeUpImg = new Image(),
     groundImg = new Image(),
-    groundPos = 0;
+    groundPos = 0,
+    groundHeight = canvasHeight - 32,
+    minTubeVisible = 32;
 
 // Expanding upon the bird variable
 bird = {
@@ -192,7 +194,7 @@ function collisionCheck(b, o) {
 function draw() {
     drawBg();
     drawObjects();
-    drawGround()
+    drawGround();
     bird.draw();
 }
 
@@ -204,7 +206,7 @@ function drawGround() {
     // Ground pattern repeats after 24 pixels
     if (--groundPos < -23)
         groundPos = 0;
-    ctx.drawImage(groundImg, groundPos, 368);
+    ctx.drawImage(groundImg, groundPos, groundHeight);
 }
 
 /**
@@ -213,8 +215,12 @@ function drawGround() {
 function drawObjects() {
     // Draw obstacles
     for (var i = obstacles.length - 1; i >= 0; --i) {
-        ctx.fillRect(obstacles[i].x, 0, obstacles[i].width, obstacles[i].gapStart);
-        ctx.fillRect(obstacles[i].x, obstacles[i].gapEnd, obstacles[i].width, canvasHeight);
+        ctx.drawImage(tubeDownImg, obstacles[i].x, obstacles[i].gapStart - tubeDownImg.height);
+        ctx.drawImage(tubeUpImg, obstacles[i].x, obstacles[i].gapEnd);
+
+
+        //ctx.fillRect(obstacles[i].x, 0, obstacles[i].width, obstacles[i].gapStart);
+        //ctx.fillRect(obstacles[i].x, obstacles[i].gapEnd, obstacles[i].width, canvasHeight);
     }
     // Draw score
     ctx.strokeText(bird.score.toString(), canvasWidthHalf, 100);
@@ -237,12 +243,12 @@ function btnPress(e) {
  * @constructor
  */
 function Obstacle(positionInArray) {
-    this.width = bird.size + bird.size;
+    this.width = tubeDownImg.width;
     /**
      * The horizontal spacing between the obstacles.
      * @type {number}
      */
-    this.spacing = positionInArray * this.width * 5;
+    this.spacing = positionInArray * this.width * 4;
     this.x = canvasWidth + this.spacing;
     /**
      * Where the vertical gap between obstacles begins.
@@ -250,7 +256,7 @@ function Obstacle(positionInArray) {
      */
     // This formula ensures the vertical gap in the obstacle will never touch the screen edge
     this.gapStart =
-        Math.round(this.width + Math.random() * (canvasHeight - gapSize - this.width * 2));
+        Math.round(minTubeVisible + Math.random() * (groundHeight - gapSize - minTubeVisible * 2));
     /**
      * Where the vertical gap between obstacles ends.
      * @type {number}
@@ -264,10 +270,10 @@ function Obstacle(positionInArray) {
      * @param xPosNextObstacle
      */
     this.resetPosition = function (xPosNextObstacle) {
-        this.spacing = (obstacles.length - 1) * this.width * 5;
+        this.spacing = (obstacles.length - 1) * this.width * 4;
         this.x = xPosNextObstacle + this.spacing;
         this.gapStart =
-            Math.round(this.width + Math.random() * (canvasHeight - gapSize - this.width * 2));
+            Math.round(minTubeVisible + Math.random() * (groundHeight - gapSize - minTubeVisible * 2));
         this.gapEnd = this.gapStart + gapSize;
     }
 }
