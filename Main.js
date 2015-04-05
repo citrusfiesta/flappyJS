@@ -18,7 +18,7 @@ window.cancelRequestAnimFrame = ( function() {
         window.oCancelRequestAnimationFrame     ||
         window.msCancelRequestAnimationFrame    ||
         clearTimeout
-} )();
+})();
 
 // Initializing variables
 var
@@ -61,7 +61,12 @@ var
      * How fast the obstacles come at you.
      * @type {number}
      */
-    scrollSpeed = 1;
+    scrollSpeed = 1,
+    birdImg = new Image(),
+    bgImg = new Image(),
+    tubeDownImg = new Image(),
+    tubeUpImg = new Image(),
+    groundImg = new Image();
 
 // Expanding upon the bird variable
 bird = {
@@ -102,6 +107,12 @@ function init() {
     // Set up canvas size
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
+
+    birdImg.src = "assets/img/bird.png";
+    bgImg.src = "assets/img/bg.png";
+    tubeDownImg.src = "assets/img/tubeDownward.png";
+    tubeUpImg.src = "assets/img/tubeUpward.png";
+    groundImg.src = "assets/img/ground.png";
 
     // Set up font properties
     ctx.font = "18px sans-serif";
