@@ -6,7 +6,7 @@ window.requestAnimFrame = (function(){
         window.oRequestAnimationFrame      ||
         window.msRequestAnimationFrame     ||
         function( callback ){
-            return window.setTimeout(callback, 1000 / 60);
+            return window.setTimeout(callback, 1000 / 30);
         };
 })();
 
@@ -42,6 +42,7 @@ var
     init = {};// variable to initialize animation
 
 window.addEventListener("keypress", btnPress);
+window.addEventListener("keypress", startGame);
 
 // Set up canvas size
 canvas.width = canvasWidth;
@@ -52,12 +53,12 @@ bird = {
     y: canvasHeight * 0.5,
     size: 16,
     color: lightColor,
-    gravity: 1,
+    gravity: 0.5,
     vertSpeed: 0,
-    jumpSpeed: 5,
+    jumpSpeed: 8,
 
     jump:function() {
-        this.vertSpeed = this.jumpSpeed;
+        this.vertSpeed = -this.jumpSpeed;
     },
 
     addGravity:function() {
@@ -72,8 +73,6 @@ bird = {
 };
 
 function update() {
-    //add gravity to player
-
     bird.addGravity();
     draw();
 }
@@ -103,10 +102,26 @@ function btnPress(e) {
 }
 
 function gameLoop() {
-    init = requestAnimFrame (gameLoop());
+    init = requestAnimFrame (gameLoop);
     update();
     draw();
 }
 
-gameLoop();
-//draw();//temp. put this in update loop later
+/**
+ * Starts the game loop.
+ * @param e Event instance that was used to call this function.
+ */
+function startGame(e) {
+    window.removeEventListener("keypress", startGame);
+    gameLoop();
+}
+
+function instructions() {
+    ctx.font = "18px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("Press [space] to begin", canvasWidth * 0.5, 200);
+}
+
+draw();
+instructions();
