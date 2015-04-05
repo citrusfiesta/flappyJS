@@ -18,7 +18,7 @@ window.cancelRequestAnimFrame = ( function() {
         window.oCancelRequestAnimationFrame     ||
         window.msCancelRequestAnimationFrame    ||
         clearTimeout
-} )();
+})();
 
 // Initializing variables
 var
