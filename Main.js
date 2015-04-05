@@ -7,7 +7,7 @@ window.requestAnimFrame = (function(){
         window.oRequestAnimationFrame      ||
         window.msRequestAnimationFrame     ||
         function( callback ){
-            return window.setTimeout(callback, 1000 / fps);
+            return window.setTimeout(callback, setTimeoutDelay);
         };
 })();
 
@@ -28,6 +28,7 @@ var
      */
     canvas = document.getElementById("canvas"),
     fps = 30,
+    setTimeoutDelay = 1000 / fps,
     /**
      * Used for drawing objects in the canvas.
      * @type {CanvasRenderingContext2D}
