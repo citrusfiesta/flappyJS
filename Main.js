@@ -37,9 +37,14 @@ var
      * The player character.
      */
     bird = {},
-    lightColor = "#dedede",
-    darkColor = "#242424",
-    init = {};// variable to initialize animation
+    color = "#dedede",
+    bgColor = "#242424",
+    /**
+     * Holds reference to the initialized game loop.
+     */
+    init = {},
+    obstacles = [],
+    gapSize = 100;
 
 window.addEventListener("keypress", btnPress);
 window.addEventListener("keypress", startGame);
@@ -52,7 +57,7 @@ bird = {
     x: 50,
     y: canvasHeight * 0.5,
     size: 16,
-    color: lightColor,
+    color: color,
     gravity: 0.5,
     vertSpeed: 0,
     jumpSpeed: 8,
@@ -74,6 +79,11 @@ bird = {
 
 function update() {
     bird.addGravity();
+
+
+    //move objects
+
+
     draw();
 }
 
@@ -87,18 +97,42 @@ function draw() {
 }
 
 function drawBg() {
-    ctx.fillStyle = darkColor;
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 }
 
 function drawObjects() {
-
+    ctx.fillStyle = color;
+    for (var obPair in obstacles) {
+        console.debug("nr of objects in obstacles is", obstacles.length);
+        //ctx.fillRect(obPair.x)
+    }
 }
 
+/**
+ * Handles button presses. Only space bar is used for now
+ * @param e
+ */
 function btnPress(e) {
     // If space bar is pressed.
     if (e.keyCode == 32)
         bird.jump();
+}
+
+function ObstaclePair() {
+    this.x = canvasWidth-100;
+    this.width = bird.size + bird.size;
+    // This formula ensures the gap in between the obstacle pair will never touch the screen edge
+    this.gapStart = Math.round(this.width + Math.random() * (canvasHeight - this.width));
+
+    ctx.fillStyle = color;
+    ctx.fillRect(this.x, 0, this.width, this.gapStart);
+
+    ctx.fillRect(this.x, this.gapStart + gapSize, this.width, canvasHeight);
+}
+
+function createObstaclePair() {
+    obstacles.push(new ObstaclePair());
 }
 
 function gameLoop() {
@@ -109,11 +143,12 @@ function gameLoop() {
 
 /**
  * Starts the game loop.
- * @param e Event instance that was used to call this function.
+ * @param e
  */
 function startGame(e) {
     window.removeEventListener("keypress", startGame);
     gameLoop();
+    createObstaclePair();//temp. testing out how obstacle pairs are made
 }
 
 function instructions() {
@@ -123,5 +158,5 @@ function instructions() {
     ctx.fillText("Press [space] to begin", canvasWidth * 0.5, 200);
 }
 
-draw();
-instructions();
+draw();// Draw everything once
+instructions();// And then draw the instructions over it
