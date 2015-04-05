@@ -1,3 +1,24 @@
+// RequestAnimFrame: a browser API for getting smooth animations
+window.requestAnimFrame = (function(){
+    return  window.requestAnimationFrame       ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame    ||
+        window.oRequestAnimationFrame      ||
+        window.msRequestAnimationFrame     ||
+        function( callback ){
+            return window.setTimeout(callback, 1000 / 60);
+        };
+})();
+
+window.cancelRequestAnimFrame = ( function() {
+    return window.cancelAnimationFrame          ||
+        window.webkitCancelRequestAnimationFrame    ||
+        window.mozCancelRequestAnimationFrame       ||
+        window.oCancelRequestAnimationFrame     ||
+        window.msCancelRequestAnimationFrame        ||
+        clearTimeout
+} )();
+
 // Initializing variables
 var
     /**
@@ -17,7 +38,8 @@ var
      */
     bird = {},
     lightColor = "#dedede",
-    darkColor = "#242424";
+    darkColor = "#242424",
+    init = {};// variable to initialize animation
 
 window.addEventListener("keypress", btnPress);
 
@@ -30,12 +52,17 @@ bird = {
     y: canvasHeight * 0.5,
     size: 16,
     color: lightColor,
-    gravity: 5,
+    gravity: 1,
     vertSpeed: 0,
     jumpSpeed: 5,
 
-    jump:function () {
-        vertSpeed = jumpSpeed;
+    jump:function() {
+        this.vertSpeed = this.jumpSpeed;
+    },
+
+    addGravity:function() {
+        this.vertSpeed += this.gravity;
+        this.y += this.vertSpeed;
     },
 
     draw: function() {
@@ -47,7 +74,7 @@ bird = {
 function update() {
     //add gravity to player
 
-    
+    bird.addGravity();
     draw();
 }
 
@@ -75,4 +102,11 @@ function btnPress(e) {
         bird.jump();
 }
 
-draw();//temp. put this in update loop later
+function gameLoop() {
+    init = requestAnimFrame (gameLoop());
+    update();
+    draw();
+}
+
+gameLoop();
+//draw();//temp. put this in update loop later
