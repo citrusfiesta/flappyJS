@@ -41,7 +41,7 @@ var
      * The player character.
      */
     bird = {},
-    color = "#dedede",
+    color = "#efefef",
     bgColor = "#242424",
     /**
      * Holds reference to the initialized game loop.
@@ -61,7 +61,7 @@ var
      * How fast the obstacles come at you.
      * @type {number}
      */
-    scrollSpeed = 1,
+    scrollSpeed = 2,
     birdImg = new Image(),
     bgImg = new Image(),
     tubeDownImg = new Image(),
@@ -69,22 +69,26 @@ var
     groundImg = new Image(),
     groundPos = 0,
     groundHeight = canvasHeight - 32,
-    minTubeVisible = 32;
+    minTubeVisible = 32,
+    halfPi = Math.PI * 0.5;
 
 // Expanding upon the bird variable
 bird = {
     x: 50,
     y: canvasHeight * 0.5,
-    size: 16,
+    width: 24,
+    height: 24,
     color: color,
     score: 0,
     /**
      * Used for help with incrementing the score.
      */
     scored: false,
-    gravity: 0.5,
+    gravity: 0.4,
     vertSpeed: 0,
-    jumpSpeed: 7,
+    jumpSpeed: 6,
+    imgWidthHalf: 17,
+    imgHeightHalf: 12,
 
     jump:function() {
         this.vertSpeed = -this.jumpSpeed;
@@ -96,17 +100,33 @@ bird = {
     },
 
     draw: function() {
-        ctx.fillRect(this.x, this.y, this.size, this.size);
+        // Save current canvas context
+        ctx.save();
+        // Move the canvas for rotation
+        ctx.translate(this.x + this.imgWidthHalf - 5, this.y + this.imgHeightHalf);
+        // Rotate accordingly
+        if (this.vertSpeed < 2) {
+            ctx.rotate(-0.5);
+        } else if (this.vertSpeed > Math.PI + 3) {
+            ctx.rotate(halfPi);
+        } else {
+            ctx.rotate((this.vertSpeed - 3) * 0.5);
+        }
+        // Draw the rotated image
+        ctx.drawImage(birdImg, -this.imgWidthHalf, -this.imgHeightHalf);
+        // Restore canvas to original state for further drawing
+        ctx.restore();
     }
+
 };
 
 // Adding event listener for the main gameplay
 window.addEventListener("keypress", btnPress);
 
 /**
- * Sets up the entire game for a fresh start.
+ * Gives time for all the images to load.
  */
-function init() {
+function preload() {
     // Set up canvas size
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
@@ -119,23 +139,37 @@ function init() {
     groundImg.src = "assets/img/ground.png";
 
     // Set up font properties
-    ctx.font = "18px sans-serif";
+    ctx.font = "24px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "bottom";
     ctx.lineWidth = 5;
     ctx.strokeStyle = bgColor;
     ctx.fillStyle = color;
 
+    canvas.addEventListener("mousedown", toInit);
+    ctx.strokeText("Click to start", canvasWidthHalf, 200);
+    ctx.fillText("Click to start", canvasWidthHalf, 200);
+}
+
+/**
+ * Sets up the entire game for a fresh start.
+ */
+function init() {
     // Reset the player character
     bird.x = 50;
     bird.y = canvasHeight * 0.5;
     bird.score = 0;
+    bird.width = birdImg.height;
+    bird.height = birdImg.height;
+    bird.imgHeightHalf = birdImg.height * 0.5;
+    bird.imgWidthHalf = birdImg.width * 0.5;
 
     // Draw everything once
     draw();
 
     // Add instructions
-    ctx.fillText("Press [space] to begin flapping", canvasWidthHalf, 200);
+    ctx.strokeText("[space] to begin flapping", canvasWidthHalf, 200);
+    ctx.fillText("[space] to begin flapping", canvasWidthHalf, 200);
 
     window.addEventListener("keypress", startGame);
 }
@@ -174,11 +208,11 @@ function moveObstacles() {
  */
 function collisionCheck(b, o) {
     // If the player hits the ground, it's game over.
-    if (b.y + b.size > groundHeight)
+    if (b.y + b.height > groundHeight)
         gameOver();
     // If the player hits an obstacle, it's game over.
-    if (b.x + b.size >= o.x && b.x <= o.x + o.width) {
-        if (b.y <= o.gapStart || b.y + b.size >= o.gapEnd)
+    if (b.x + b.width >= o.x && b.x <= o.x + o.width) {
+        if (b.y <= o.gapStart || b.y + b.height >= o.gapEnd)
             gameOver();
     }
     // If the player passes an obstacle, player earns a point.
@@ -202,9 +236,13 @@ function drawBg() {
     ctx.drawImage(bgImg, 0, 0);
 }
 
+/**
+ * Moves the ground towards the player and draws it.
+ */
 function drawGround() {
+    groundPos -= scrollSpeed;
     // Ground pattern repeats after 24 pixels
-    if (--groundPos < -23)
+    if (groundPos < -23)
         groundPos = 0;
     ctx.drawImage(groundImg, groundPos, groundHeight);
 }
@@ -336,4 +374,9 @@ function restart(e) {
     }
 }
 
-init();// Initialize everything
+function toInit(e) {
+    canvas.removeEventListener("mousedown", toInit);
+    init();
+}
+
+preload();// Preload assets
