@@ -397,11 +397,6 @@ function startGame(e) {
  * Called when player collides with obstacle. Handles the stopping of the game.
  */
 function gameOver(){
-    //// Draw instructions
-    //ctx.strokeText("[enter] to restart", canvasWidthHalf, 200);
-    //ctx.fillText("[enter] to restart", canvasWidthHalf, 200);
-    //window.addEventListener("keypress", restart);
-
     // Remove the abilty to jump
     window.removeEventListener("keypress", btnPress);
     // Stop the game loop.
