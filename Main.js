@@ -93,6 +93,14 @@ bird = {
     jumpSpeed: 6,
     imgWidthHalf: 17,
     imgHeightHalf: 12,
+    /**
+     * Counter implemented over the standard frame counter to slow it down.
+     */
+    frameSlowDown:0,
+    /**
+     * Determines which frame to show.
+     */
+    frame: 0,
 
     jump:function() {
         this.vertSpeed = -this.jumpSpeed;
@@ -104,6 +112,12 @@ bird = {
     },
 
     draw: function() {
+        // Do the math to pick a frame
+        if (++this.frameSlowDown > 3) {
+            this.frameSlowDown = 0;
+            if (++this.frame > 3)
+                this.frame = 0;
+        }
         // Save current canvas context
         ctx.save();
         // Move the canvas for rotation
@@ -115,8 +129,8 @@ bird = {
             ctx.rotate(halfPi);
         else
             ctx.rotate((this.vertSpeed - 4) * 0.5);
-        // Draw the rotated image
-        ctx.drawImage(birdImg, -this.imgWidthHalf, -this.imgHeightHalf);
+        // Draw the rotated image from the sprite sheet
+        ctx.drawImage(birdAnimImg, 34 * this.frame, 0, 34, 24, -this.imgWidthHalf, -this.imgHeightHalf, 34, 24);
         // Restore canvas to original state for further drawing
         ctx.restore();
     }
@@ -176,7 +190,7 @@ function loadImages() {
     };
 
     birdImg.src = "assets/img/bird.png";
-    birdAnimImg.src = "assets/img/bird.png";
+    birdAnimImg.src = "assets/img/birdAnim.png";
     groundImg.src = "assets/img/ground.png";
     bgImg.src = "assets/img/bg.png";
     tubeDownImg.src = "assets/img/tubeDownward.png";
@@ -396,7 +410,7 @@ function startGame(e) {
 /**
  * Called when player collides with obstacle. Handles the stopping of the game.
  */
-function gameOver(){
+function gameOver() {
     // Remove the abilty to jump
     window.removeEventListener("keypress", btnPress);
     // Stop the game loop.
