@@ -142,10 +142,11 @@ function preload() {
     canvas.height = canvasHeight;
 
     // Set up font properties
-    ctx.font = "24px sans-serif";
+    //ctx.font = "24px sans-serif";
+    ctx.font = "28px flappyFont";
     ctx.textAlign = "center";
     ctx.textBaseline = "bottom";
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 4;
     ctx.strokeStyle = bgColor;
     ctx.fillStyle = color;
 
@@ -214,8 +215,8 @@ function init() {
     draw();
 
     // Add instructions
-    ctx.strokeText("[space] to begin flapping", canvasWidthHalf, 200);
-    ctx.fillText("[space] to begin flapping", canvasWidthHalf, 200);
+    ctx.strokeText("flap with (space)", canvasWidthHalf, 150);
+    ctx.fillText("flap with (space)", canvasWidthHalf, 150);
 
     // Add event listener for starting the game
     window.addEventListener("keypress", startGame);
@@ -381,15 +382,21 @@ function gameLoop() {
     update();
 }
 
+/**
+ * The animation that plays when you collide with a pipe or the ground.
+ */
 function deathAnim() {
+    // Start new loop
     game = requestAnimFrame(deathAnim);
     bird.addGravity();
     draw();
+
     if (bird.y - bird.vertSpeed > canvasHeight) {
+        // When the bird is off-screen stop the loop
         cancelRequestAnimFrame(game);
-        // Draw instructions
-        ctx.strokeText("[enter] to restart", canvasWidthHalf, 200);
-        ctx.fillText("[enter] to restart", canvasWidthHalf, 200);
+        // Draw instructions for restarting
+        ctx.strokeText("(enter) to restart", canvasWidthHalf, 200);
+        ctx.fillText("(enter) to restart", canvasWidthHalf, 200);
         window.addEventListener("keypress", restart);
     }
 }
