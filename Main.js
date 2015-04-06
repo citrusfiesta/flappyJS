@@ -64,12 +64,13 @@ var
      */
     scrollSpeed = 2,
     // Images
-    birdImg = new Image(),
-    birdAnimImg = new Image(),
-    bgImg = new Image(),
-    groundImg = new Image(),
-    tubeDownImg = new Image(),
-    tubeUpImg = new Image(),
+    images = [
+        birdImg = new Image(),
+        birdAnimImg = new Image(),
+        bgImg = new Image(),
+        groundImg = new Image(),
+        tubeDownImg = new Image(),
+        tubeUpImg = new Image()],
 
     groundPos = 0,
     groundHeight = canvasHeight - 32,
@@ -158,37 +159,15 @@ function preload() {
  */
 function loadImages() {
     var imagesLoaded = 0;
+    var total = images.length;
 
-    birdImg.onload = function () {
-        imagesLoaded++;
-        if (imagesLoaded == 6)
-            init();
-    };
-    birdAnimImg.onload = function () {
-        imagesLoaded++;
-        if (imagesLoaded == 6)
-            init();
-    };
-    groundImg.onload = function () {
-        imagesLoaded++;
-        if (imagesLoaded == 6)
-            init();
-    };
-    bgImg.onload = function () {
-        imagesLoaded++;
-        if (imagesLoaded == 6)
-            init();
-    };
-    tubeDownImg.onload = function () {
-        imagesLoaded++;
-        if (imagesLoaded == 6)
-            init();
-    };
-    tubeUpImg.onload = function () {
-        imagesLoaded++;
-        if (imagesLoaded == 6)
-            init();
-    };
+    for (var i = 0; i < total; i++) {
+        images[i].onload = function () {
+            imagesLoaded++;
+            if (imagesLoaded == total)
+                init();
+        }
+    }
 
     birdImg.src = "assets/img/bird.png";
     birdAnimImg.src = "assets/img/birdAnim.png";
