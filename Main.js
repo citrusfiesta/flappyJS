@@ -122,9 +122,6 @@ bird = {
     }
 };
 
-// Adding event listener for the main gameplay
-window.addEventListener("keypress", btnPress);
-
 function preload() {
     // Set up canvas size
     canvas.width = canvasWidth;
@@ -193,6 +190,7 @@ function init() {
     // Reset the player character
     bird.x = 50;
     bird.y = canvasHeight * 0.5;
+    bird.vertSpeed = 0;
     bird.score = 0;
     bird.width = bird.height = birdImg.height;
     bird.imgHeightHalf = birdImg.height * 0.5;
@@ -205,7 +203,11 @@ function init() {
     ctx.strokeText("[space] to begin flapping", canvasWidthHalf, 200);
     ctx.fillText("[space] to begin flapping", canvasWidthHalf, 200);
 
+    // Add event listener for starting the game
     window.addEventListener("keypress", startGame);
+
+    // Adding event listener for the main gameplay
+    window.addEventListener("keypress", btnPress);
 }
 
 /**
@@ -213,14 +215,14 @@ function init() {
  */
 function update() {
     bird.addGravity();
-    moveObstacles();
+    moveObjects();
     collisionCheck(bird, obstacles[0]);
 }
 
 /**
- * Moves the obstacles forward.
+ * Moves the obstacles and ground forward.
  */
-function moveObstacles() {
+function moveObjects() {
     // Move all obstacles forward
     for (var i = obstacles.length - 1; i >= 0; --i)
         obstacles[i].x -= scrollSpeed;
@@ -233,6 +235,11 @@ function moveObstacles() {
         // (If it is set to false too soon, the score will just keep incrementing)
         bird.scored = false;
     }
+
+    groundPos -= scrollSpeed;
+    // Ground pattern repeats after 24 pixels
+    if (groundPos < -23)
+        groundPos = 0;
 }
 
 /**
@@ -274,10 +281,6 @@ function drawBg() {
  * Moves the ground towards the player and draws it.
  */
 function drawGround() {
-    groundPos -= scrollSpeed;
-    // Ground pattern repeats after 24 pixels
-    if (groundPos < -23)
-        groundPos = 0;
     ctx.drawImage(groundImg, groundPos, groundHeight);
 }
 
@@ -364,6 +367,19 @@ function gameLoop() {
     update();
 }
 
+function deathAnim() {
+    game = requestAnimFrame(deathAnim);
+    bird.addGravity();
+    draw();
+    if (bird.y - bird.vertSpeed > canvasHeight) {
+        cancelRequestAnimFrame(game);
+        // Draw instructions
+        ctx.strokeText("[enter] to restart", canvasWidthHalf, 200);
+        ctx.fillText("[enter] to restart", canvasWidthHalf, 200);
+        window.addEventListener("keypress", restart);
+    }
+}
+
 /**
  * Starts the game loop when space bar is pressed.
  * @param e
@@ -381,12 +397,18 @@ function startGame(e) {
  * Called when player collides with obstacle. Handles the stopping of the game.
  */
 function gameOver(){
-    // Draw instructions
-    ctx.strokeText("[enter] to restart", canvasWidthHalf, 200);
-    ctx.fillText("[enter] to restart", canvasWidthHalf, 200);
-    window.addEventListener("keypress", restart);
+    //// Draw instructions
+    //ctx.strokeText("[enter] to restart", canvasWidthHalf, 200);
+    //ctx.fillText("[enter] to restart", canvasWidthHalf, 200);
+    //window.addEventListener("keypress", restart);
+
+    // Remove the abilty to jump
+    window.removeEventListener("keypress", btnPress);
     // Stop the game loop.
     cancelRequestAnimFrame(game);
+    // Start the death animation
+    bird.jump();
+    deathAnim();
 }
 
 /**
