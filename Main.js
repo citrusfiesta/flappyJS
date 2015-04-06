@@ -37,6 +37,7 @@ var
     canvasWidth = 300,
     canvasWidthHalf = canvasWidth * 0.5,
     canvasHeight = 400,
+    canvasHeightHalf = canvasHeight * 0.5,
     /**
      * The player character.
      */
@@ -62,11 +63,14 @@ var
      * @type {number}
      */
     scrollSpeed = 2,
+    // Images
     birdImg = new Image(),
+    birdAnimImg = new Image(),
     bgImg = new Image(),
+    groundImg = new Image(),
     tubeDownImg = new Image(),
     tubeUpImg = new Image(),
-    groundImg = new Image(),
+
     groundPos = 0,
     groundHeight = canvasHeight - 32,
     minTubeVisible = 32,
@@ -105,38 +109,26 @@ bird = {
         // Move the canvas for rotation
         ctx.translate(this.x + this.imgWidthHalf - 5, this.y + this.imgHeightHalf);
         // Rotate accordingly
-        if (this.vertSpeed < 2) {
+        if (this.vertSpeed < 3)
             ctx.rotate(-0.5);
-        } else if (this.vertSpeed > Math.PI + 3) {
+        else if (this.vertSpeed > Math.PI + 4)
             ctx.rotate(halfPi);
-        } else {
-            ctx.rotate((this.vertSpeed - 3) * 0.5);
-        }
+        else
+            ctx.rotate((this.vertSpeed - 4) * 0.5);
         // Draw the rotated image
         ctx.drawImage(birdImg, -this.imgWidthHalf, -this.imgHeightHalf);
         // Restore canvas to original state for further drawing
         ctx.restore();
     }
-
 };
 
 // Adding event listener for the main gameplay
 window.addEventListener("keypress", btnPress);
 
-/**
- * Gives time for all the images to load.
- */
 function preload() {
     // Set up canvas size
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
-
-    // Set up image source
-    birdImg.src = "assets/img/bird.png";
-    bgImg.src = "assets/img/bg.png";
-    tubeDownImg.src = "assets/img/tubeDownward.png";
-    tubeUpImg.src = "assets/img/tubeUpward.png";
-    groundImg.src = "assets/img/ground.png";
 
     // Set up font properties
     ctx.font = "24px sans-serif";
@@ -146,21 +138,63 @@ function preload() {
     ctx.strokeStyle = bgColor;
     ctx.fillStyle = color;
 
-    canvas.addEventListener("mousedown", toInit);
-    ctx.strokeText("Click to start", canvasWidthHalf, 200);
-    ctx.fillText("Click to start", canvasWidthHalf, 200);
+    loadImages();
 }
 
 /**
- * Sets up the entire game for a fresh start.
+ * Loads all images. When done, init() is called.
+ */
+function loadImages() {
+    var imagesLoaded = 0;
+
+    birdImg.onload = function () {
+        imagesLoaded++;
+        if (imagesLoaded == 6)
+            init();
+    };
+    birdAnimImg.onload = function () {
+        imagesLoaded++;
+        if (imagesLoaded == 6)
+            init();
+    };
+    groundImg.onload = function () {
+        imagesLoaded++;
+        if (imagesLoaded == 6)
+            init();
+    };
+    bgImg.onload = function () {
+        imagesLoaded++;
+        if (imagesLoaded == 6)
+            init();
+    };
+    tubeDownImg.onload = function () {
+        imagesLoaded++;
+        if (imagesLoaded == 6)
+            init();
+    };
+    tubeUpImg.onload = function () {
+        imagesLoaded++;
+        if (imagesLoaded == 6)
+            init();
+    };
+
+    birdImg.src = "assets/img/bird.png";
+    birdAnimImg.src = "assets/img/bird.png";
+    groundImg.src = "assets/img/ground.png";
+    bgImg.src = "assets/img/bg.png";
+    tubeDownImg.src = "assets/img/tubeDownward.png";
+    tubeUpImg.src = "assets/img/tubeUpward.png";
+}
+
+/**
+ * Sets up the game for a fresh start.
  */
 function init() {
     // Reset the player character
     bird.x = 50;
     bird.y = canvasHeight * 0.5;
     bird.score = 0;
-    bird.width = birdImg.height;
-    bird.height = birdImg.height;
+    bird.width = bird.height = birdImg.height;
     bird.imgHeightHalf = birdImg.height * 0.5;
     bird.imgWidthHalf = birdImg.width * 0.5;
 
@@ -248,17 +282,13 @@ function drawGround() {
 }
 
 /**
- * Draws everything except for the dark background and the player character.
+ * Draws everything except for the background and the player character.
  */
 function drawObjects() {
     // Draw obstacles
     for (var i = obstacles.length - 1; i >= 0; --i) {
         ctx.drawImage(tubeDownImg, obstacles[i].x, obstacles[i].gapStart - tubeDownImg.height);
         ctx.drawImage(tubeUpImg, obstacles[i].x, obstacles[i].gapEnd);
-
-
-        //ctx.fillRect(obstacles[i].x, 0, obstacles[i].width, obstacles[i].gapStart);
-        //ctx.fillRect(obstacles[i].x, obstacles[i].gapEnd, obstacles[i].width, canvasHeight);
     }
     // Draw score
     ctx.strokeText(bird.score.toString(), canvasWidthHalf, 100);
@@ -342,8 +372,7 @@ function startGame(e) {
     // If space bar is pressed.
     if (e.keyCode == 32) {
         window.removeEventListener("keypress", startGame);
-        // Create
-        createObstacle(3);
+        createObstacle(2);
         gameLoop();
     }
 }
@@ -353,8 +382,8 @@ function startGame(e) {
  */
 function gameOver(){
     // Draw instructions
-    ctx.strokeText("Press [enter] to restart", canvasWidthHalf, 200);
-    ctx.fillText("Press [enter] to restart", canvasWidthHalf, 200);
+    ctx.strokeText("[enter] to restart", canvasWidthHalf, 200);
+    ctx.fillText("[enter] to restart", canvasWidthHalf, 200);
     window.addEventListener("keypress", restart);
     // Stop the game loop.
     cancelRequestAnimFrame(game);
@@ -372,11 +401,6 @@ function restart(e) {
         obstacles = [];
         init();
     }
-}
-
-function toInit(e) {
-    canvas.removeEventListener("mousedown", toInit);
-    init();
 }
 
 preload();// Preload assets
